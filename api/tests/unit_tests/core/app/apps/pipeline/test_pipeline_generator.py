@@ -707,6 +707,64 @@ def test_build_document_supports_online_drive_datasource_type(generator):
     assert document.name == "drive.pdf"
 
 
+def test_build_document_website_crawl_uses_source_url_as_name(generator):
+    document = generator._build_document(
+        tenant_id="tenant",
+        dataset_id="ds",
+        built_in_field_enabled=False,
+        datasource_type=DatasourceProviderType.WEBSITE_CRAWL,
+        datasource_info={
+            "source_url": "https://example.com/docs/page",
+            "title": "Page Title",
+            "content": "# hello",
+            "description": "desc",
+        },
+        created_from="rag-pipeline",
+        position=1,
+        account=_build_user(),
+        batch="batch",
+        document_form="text",
+    )
+
+    assert document.name == "https://example.com/docs/page"
+
+
+def test_build_document_website_crawl_falls_back_to_title(generator):
+    document = generator._build_document(
+        tenant_id="tenant",
+        dataset_id="ds",
+        built_in_field_enabled=False,
+        datasource_type=DatasourceProviderType.WEBSITE_CRAWL,
+        datasource_info={"title": "Custom Name", "content": ""},
+        created_from="rag-pipeline",
+        position=1,
+        account=_build_user(),
+        batch="batch",
+        document_form="text",
+    )
+
+    assert document.name == "Custom Name"
+
+
+def test_build_document_website_crawl_truncates_long_source_url(generator):
+    long_url = "https://example.com/" + ("a" * 300)
+    document = generator._build_document(
+        tenant_id="tenant",
+        dataset_id="ds",
+        built_in_field_enabled=False,
+        datasource_type=DatasourceProviderType.WEBSITE_CRAWL,
+        datasource_info={"source_url": long_url, "title": "Page Title"},
+        created_from="rag-pipeline",
+        position=1,
+        account=_build_user(),
+        batch="batch",
+        document_form="text",
+    )
+
+    assert document.name == long_url[:200] + "..."
+    assert len(document.name) <= 255
+
+
 def test_build_document_invalid_datasource_type(generator):
     with pytest.raises(ValueError, match="Unsupported datasource type: invalid"):
         generator._build_document(

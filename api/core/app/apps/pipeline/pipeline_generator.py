@@ -734,7 +734,10 @@ class PipelineGenerator(BaseAppGenerator):
             case DatasourceProviderType.ONLINE_DOCUMENT:
                 name = datasource_info.get("page", {}).get("page_name", "untitled")
             case DatasourceProviderType.WEBSITE_CRAWL:
-                name = datasource_info.get("title", "untitled")
+                # Prefer source_url over page title so crawl documents keep a stable, unique name.
+                name = datasource_info.get("source_url") or datasource_info.get("title", "untitled")
+                if len(name) > 255:
+                    name = name[:200] + "..."
             case DatasourceProviderType.ONLINE_DRIVE:
                 name = datasource_info.get("name", "untitled")
             case _:
