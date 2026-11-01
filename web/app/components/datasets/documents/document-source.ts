@@ -1,4 +1,6 @@
 import type { DataSourceNotionPage } from '@/models/common'
+import { DataSourceType } from '@/models/datasets'
+import { DatasourceType } from '@/models/pipeline'
 
 // data_source_info is written by the data source that imported the document, so its keys are
 // read defensively for each source type.
@@ -19,6 +21,10 @@ const isNotionPageIcon = (
 
 const toNotionIcon = (value: unknown) =>
   typeof value === 'string' || isNotionPageIcon(value) ? value : undefined
+
+/** Classic uploads and pipeline local files both have a downloadable original file. */
+export const isDownloadableFileSource = (dataSourceType?: string | null) =>
+  dataSourceType === DataSourceType.FILE || dataSourceType === DatasourceType.localFile
 
 /** The file extension of a legacy uploaded-file document. */
 export const getUploadFileExtension = (info: DocumentSourceInfo) =>

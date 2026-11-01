@@ -12,15 +12,12 @@ import {
   getNotionPageIcon,
   getOnlineDriveFileName,
   getUploadFileExtension,
+  isDownloadableFileSource,
 } from '../../../document-source'
 
 type DocumentSourceIconProps = {
   doc: DocumentWithSegmentsResponse
   fileType?: string
-}
-
-const isLocalFile = (dataSourceType?: string | null) => {
-  return dataSourceType === DatasourceType.localFile || dataSourceType === DataSourceType.FILE
 }
 
 const isOnlineDocument = (dataSourceType?: string | null) => {
@@ -59,7 +56,7 @@ const DocumentSourceIcon: FC<DocumentSourceIconProps> = React.memo(({ doc, fileT
     )
   }
 
-  if (isLocalFile(doc.data_source_type)) {
+  if (isDownloadableFileSource(doc.data_source_type)) {
     return (
       <FileTypeIcon
         type={extensionToFileType(

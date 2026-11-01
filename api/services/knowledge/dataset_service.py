@@ -1753,12 +1753,19 @@ class DocumentService:
     ) -> str:
         """
         Normalize and validate `Document -> UploadFile` linkage for download flows.
+
+        Classic uploads store `upload_file_id`. Pipeline local-file sources store
+        `related_id` (or `real_file_id` after a knowledge-base transform).
         """
-        if document.data_source_type != DataSourceType.UPLOAD_FILE:
+        if document.data_source_type not in {DataSourceType.UPLOAD_FILE, DataSourceType.LOCAL_FILE}:
             raise NotFound(invalid_source_message)
 
         data_source_info: dict[str, Any] = document.data_source_info_dict or {}
-        upload_file_id: str | None = data_source_info.get("upload_file_id")
+        upload_file_id = (
+            data_source_info.get("upload_file_id")
+            or data_source_info.get("related_id")
+            or data_source_info.get("real_file_id")
+        )
         if not upload_file_id:
             raise NotFound(missing_file_message)
 

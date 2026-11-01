@@ -64,26 +64,27 @@ describe('useDocumentSelection', () => {
   })
 
   describe('downloadableSelectedIds', () => {
-    it('should return only FILE type documents from selection', () => {
+    it('should return only file-source documents from selection', () => {
       const docs = [
         createMockDocument({ id: 'doc1', data_source_type: DataSourceType.FILE }),
         createMockDocument({ id: 'doc2', data_source_type: DataSourceType.NOTION }),
         createMockDocument({ id: 'doc3', data_source_type: DataSourceType.FILE }),
+        createMockDocument({ id: 'doc4', data_source_type: 'local_file' }),
       ]
       const onSelectedIdChange = vi.fn()
 
       const { result } = renderHook(() =>
         useDocumentSelection({
           documents: docs,
-          selectedIds: ['doc1', 'doc2', 'doc3'],
+          selectedIds: ['doc1', 'doc2', 'doc3', 'doc4'],
           onSelectedIdChange,
         }),
       )
 
-      expect(result.current.downloadableSelectedIds).toEqual(['doc1', 'doc3'])
+      expect(result.current.downloadableSelectedIds).toEqual(['doc1', 'doc3', 'doc4'])
     })
 
-    it('should return empty array when no FILE documents selected', () => {
+    it('should return empty array when no file-source documents selected', () => {
       const docs = [
         createMockDocument({ id: 'doc1', data_source_type: DataSourceType.NOTION }),
         createMockDocument({ id: 'doc2', data_source_type: DataSourceType.WEB }),

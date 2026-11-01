@@ -1,6 +1,7 @@
 import type { OperationName } from '../types'
 import { cn } from '@langgenius/dify-ui/cn'
 import { Dialog, DialogContent } from '@langgenius/dify-ui/dialog'
+import { IconButton } from '@langgenius/dify-ui/icon-button'
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@langgenius/dify-ui/menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@langgenius/dify-ui/popover'
 import { Separator } from '@langgenius/dify-ui/separator'
@@ -11,6 +12,7 @@ import { noop } from 'es-toolkit/function'
 import * as React from 'react'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { isDownloadableFileSource } from '@/app/components/datasets/documents/document-source'
 import { toast } from '@/app/notifications'
 import { systemFeaturesQueryOptions } from '@/features/system-features/client'
 import { DataSourceType, DocumentActionType } from '@/models/datasets'
@@ -91,7 +93,7 @@ const Operations = ({
   const canShowRenameAction = canEdit && !archived
   const canShowSummaryAction = canEdit && !archived && isNonCloudEdition
   const canShowSettingsAction = canViewSettings
-  const canShowDownloadAction = canDownload && data_source_type === DataSourceType.FILE
+  const canShowDownloadAction = canDownload && isDownloadableFileSource(data_source_type)
   const canShowSyncAction =
     canEdit &&
     !archived &&
@@ -102,11 +104,7 @@ const Operations = ({
   const canShowUnarchiveAction = canEdit && archived
   const canShowDeleteAction = canDelete
   const canShowPrimarySection =
-    canShowRenameAction ||
-    canShowSummaryAction ||
-    canShowSettingsAction ||
-    canShowDownloadAction ||
-    canShowSyncAction
+    canShowRenameAction || canShowSummaryAction || canShowSettingsAction || canShowSyncAction
   const canShowStatusSection =
     canShowPauseAction || canShowResumeAction || canShowArchiveAction || canShowUnarchiveAction
   const hasOperationsMenu =
@@ -310,10 +308,31 @@ const Operations = ({
       {isListScene && embeddingAvailable && (
         <>
           {renderListSwitch()}
-          {hasOperationsMenu && (
+          {(hasOperationsMenu || canShowDownloadAction) && (
             <Separator decorative className="ms-4 me-2 h-3" orientation="vertical" />
           )}
         </>
+      )}
+      {isListScene && !embeddingAvailable && canShowDownloadAction && (
+        <Separator decorative className="me-2 h-3" orientation="vertical" />
+      )}
+      {canShowDownloadAction && (
+        <IconButton
+          aria-label={t(($) => $['list.action.download'], { ns: 'datasetDocuments' })}
+          className={cn('me-1', !isListScene && 'me-2', isDownloading && 'opacity-60')}
+          disabled={isDownloading}
+          size={isListScene ? 'md' : 'lg'}
+          variant={isListScene ? 'ghost' : 'secondary'}
+          onClick={handleDownloadClick}
+        >
+          <span
+            aria-hidden
+            className={cn(
+              'size-4',
+              isDownloading ? 'i-ri-loader-4-line animate-spin' : 'i-ri-download-2-line',
+            )}
+          />
+        </IconButton>
       )}
       {hasOperationsMenu && (
         <>
@@ -367,17 +386,6 @@ const Operations = ({
                     </MenuItem>
                   )}
                   {canShowSettingsAction && settingsMenuItem}
-                  {canShowDownloadAction && (
-                    <MenuItem className={menuActionClassName} onClick={handleDownloadClick}>
-                      <span
-                        aria-hidden
-                        className="i-ri-download-2-line size-4 text-text-tertiary"
-                      />
-                      <span className="text-sm text-text-secondary">
-                        {t(($) => $['list.action.download'], { ns: 'datasetDocuments' })}
-                      </span>
-                    </MenuItem>
-                  )}
                   {canShowSyncAction && (
                     <MenuItem
                       className={menuActionClassName}

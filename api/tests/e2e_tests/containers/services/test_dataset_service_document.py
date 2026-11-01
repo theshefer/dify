@@ -282,6 +282,42 @@ def test_get_upload_file_id_for_upload_file_document_returns_string_id(db_sessio
     assert result == "99"
 
 
+def test_get_upload_file_id_for_local_file_document_uses_related_id(db_session_with_containers: Session):
+    dataset = DocumentServiceIntegrationFactory.create_dataset(db_session_with_containers)
+    document = DocumentServiceIntegrationFactory.create_document(
+        db_session_with_containers,
+        dataset=dataset,
+        data_source_type=DataSourceType.LOCAL_FILE,
+        data_source_info={"related_id": "local-file-1", "name": "notes.pdf"},
+    )
+
+    result = DocumentService._get_upload_file_id_for_upload_file_document(
+        document,
+        invalid_source_message="invalid source",
+        missing_file_message="missing file",
+    )
+
+    assert result == "local-file-1"
+
+
+def test_get_upload_file_id_for_local_file_document_uses_real_file_id(db_session_with_containers: Session):
+    dataset = DocumentServiceIntegrationFactory.create_dataset(db_session_with_containers)
+    document = DocumentServiceIntegrationFactory.create_document(
+        db_session_with_containers,
+        dataset=dataset,
+        data_source_type=DataSourceType.LOCAL_FILE,
+        data_source_info={"real_file_id": "transformed-file-1", "name": "notes.pdf"},
+    )
+
+    result = DocumentService._get_upload_file_id_for_upload_file_document(
+        document,
+        invalid_source_message="invalid source",
+        missing_file_message="missing file",
+    )
+
+    assert result == "transformed-file-1"
+
+
 def test_get_upload_file_for_upload_file_document_raises_when_file_service_returns_nothing(
     db_session_with_containers: Session,
 ):

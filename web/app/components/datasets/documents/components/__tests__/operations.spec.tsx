@@ -139,8 +139,7 @@ describe('Operations', () => {
       expect(mockDisable).not.toHaveBeenCalled()
     })
 
-    it('should only render download action when download is the only granted document operation', async () => {
-      const user = userEvent.setup()
+    it('should only render download button when download is the only granted document operation', () => {
       render(
         <Operations
           {...defaultProps}
@@ -151,23 +150,11 @@ describe('Operations', () => {
         />,
       )
 
-      const moreButton = screen.getByRole('button', { name: 'common.operation.more' })
-      await user.click(moreButton)
-
       expect(
-        screen.getByRole('menuitem', { name: 'datasetDocuments.list.action.download' }),
+        screen.getByRole('button', { name: 'datasetDocuments.list.action.download' }),
       ).toBeInTheDocument()
       expect(
-        screen.queryByRole('menuitem', { name: 'datasetDocuments.list.table.rename' }),
-      ).not.toBeInTheDocument()
-      expect(
-        screen.queryByRole('menuitem', { name: 'datasetDocuments.list.action.settings' }),
-      ).not.toBeInTheDocument()
-      expect(
-        screen.queryByRole('menuitem', { name: 'datasetDocuments.list.action.archive' }),
-      ).not.toBeInTheDocument()
-      expect(
-        screen.queryByRole('menuitem', { name: 'datasetDocuments.list.action.delete' }),
+        screen.queryByRole('button', { name: 'common.operation.more' }),
       ).not.toBeInTheDocument()
     })
   })
@@ -378,8 +365,7 @@ describe('Operations', () => {
     it('should download file when download action is clicked', async () => {
       const user = userEvent.setup()
       render(<Operations {...defaultProps} />)
-      await openPopover(user)
-      const downloadButton = screen.getByRole('menuitem', {
+      const downloadButton = screen.getByRole('button', {
         name: 'datasetDocuments.list.action.download',
       })
       await user.click(downloadButton)
@@ -409,7 +395,7 @@ describe('Operations', () => {
         screen.getByRole('menuitem', { name: 'datasetDocuments.list.action.settings' }),
       ).toBeInTheDocument()
       expect(
-        screen.queryByRole('menuitem', { name: 'datasetDocuments.list.action.download' }),
+        screen.queryByRole('button', { name: 'datasetDocuments.list.action.download' }),
       ).not.toBeInTheDocument()
     })
 
@@ -421,8 +407,7 @@ describe('Operations', () => {
           detail={{ ...defaultDetail, archived: true, data_source_type: 'upload_file' }}
         />,
       )
-      await openPopover(user)
-      const downloadButton = screen.getByRole('menuitem', {
+      const downloadButton = screen.getByRole('button', {
         name: 'datasetDocuments.list.action.download',
       })
       await user.click(downloadButton)
@@ -454,8 +439,7 @@ describe('Operations', () => {
       const user = userEvent.setup()
       mockDownload.mockRejectedValue(new Error('Download Error'))
       render(<Operations {...defaultProps} />)
-      await user.click(screen.getByRole('button', { name: 'common.operation.more' }))
-      const downloadButton = screen.getByRole('menuitem', {
+      const downloadButton = screen.getByRole('button', {
         name: 'datasetDocuments.list.action.download',
       })
       await user.click(downloadButton)
@@ -469,8 +453,7 @@ describe('Operations', () => {
       const user = userEvent.setup()
       mockDownload.mockResolvedValue({ url: '' })
       render(<Operations {...defaultProps} />)
-      await user.click(screen.getByRole('button', { name: 'common.operation.more' }))
-      const downloadButton = screen.getByRole('menuitem', {
+      const downloadButton = screen.getByRole('button', {
         name: 'datasetDocuments.list.action.download',
       })
       await user.click(downloadButton)
@@ -498,18 +481,28 @@ describe('Operations', () => {
   })
 
   describe('data source types', () => {
-    it('should not show download for non-file data source', async () => {
-      const user = userEvent.setup()
+    it('should not show download for non-file data source', () => {
       render(
         <Operations
           {...defaultProps}
           detail={{ ...defaultDetail, data_source_type: 'notion_import' }}
         />,
       )
-      await user.click(screen.getByRole('button', { name: 'common.operation.more' }))
       expect(
-        screen.queryByRole('menuitem', { name: 'datasetDocuments.list.action.download' }),
+        screen.queryByRole('button', { name: 'datasetDocuments.list.action.download' }),
       ).not.toBeInTheDocument()
+    })
+
+    it('should show download for pipeline local-file data source', () => {
+      render(
+        <Operations
+          {...defaultProps}
+          detail={{ ...defaultDetail, data_source_type: 'local_file' }}
+        />,
+      )
+      expect(
+        screen.getByRole('button', { name: 'datasetDocuments.list.action.download' }),
+      ).toBeInTheDocument()
     })
   })
 })

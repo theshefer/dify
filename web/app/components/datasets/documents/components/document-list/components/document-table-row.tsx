@@ -16,7 +16,8 @@ import { useDatasetDetailContextWithSelector } from '@/context/dataset-detail'
 import { workspacePermissionKeysAtom } from '@/context/permission-state'
 import { userProfileQueryOptions } from '@/features/account-profile/client'
 import useTimestamp from '@/hooks/use-timestamp'
-import { DataSourceType, isDocumentDisplayStatus } from '@/models/datasets'
+import { isDownloadableFileSource } from '@/app/components/datasets/documents/document-source'
+import { isDocumentDisplayStatus } from '@/models/datasets'
 import Link from '@/next/link'
 import { useRouter, useSearchParams } from '@/next/navigation'
 import { formatNumber } from '@/utils/format'
@@ -80,7 +81,7 @@ const DocumentTableRow = React.memo(
       [dataset?.maintainer, dataset?.permission_keys, currentUserId, workspacePermissionKeys],
     )
 
-    const isFile = doc.data_source_type === DataSourceType.FILE
+    const isFile = isDownloadableFileSource(doc.data_source_type)
     const fileType = isFile ? doc.data_source_detail_dict?.upload_file?.extension : ''
     const queryString = searchParams.toString()
 

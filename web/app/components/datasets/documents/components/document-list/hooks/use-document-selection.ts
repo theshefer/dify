@@ -1,6 +1,6 @@
 import type { DocumentWithSegmentsResponse } from '@dify/contracts/api/console/datasets/types.gen'
 import { useCallback, useMemo } from 'react'
-import { DataSourceType } from '@/models/datasets'
+import { isDownloadableFileSource } from '@/app/components/datasets/documents/document-source'
 
 type LocalDoc = DocumentWithSegmentsResponse & { percent?: number }
 
@@ -22,7 +22,7 @@ export const useDocumentSelection = ({
   const downloadableSelectedIds = useMemo(() => {
     const selectedSet = new Set(selectedIds)
     return documents
-      .filter((doc) => selectedSet.has(doc.id) && doc.data_source_type === DataSourceType.FILE)
+      .filter((doc) => selectedSet.has(doc.id) && isDownloadableFileSource(doc.data_source_type))
       .map((doc) => doc.id)
   }, [documents, selectedIds])
 
