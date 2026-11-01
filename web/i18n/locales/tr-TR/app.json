@@ -162,6 +162,7 @@
   "maxActiveRequests": "Maksimum eş zamanlı istekler",
   "maxActiveRequestsPlaceholder": "Sınırsız için 0 girin",
   "maxActiveRequestsTip": "Her uygulama için maksimum eşzamanlı aktif istek sayısı (sınırsız için 0)",
+  "permissions": "Permissions",
   "mermaid.preview": "Diyagramı önizle",
   "newApp.Cancel": "İptal",
   "newApp.Confirm": "Onayla",

@@ -162,6 +162,7 @@
   "maxActiveRequests": "अधिकतम समवर्ती अनुरोध",
   "maxActiveRequestsPlaceholder": "असीमित के लिए 0 दर्ज करें",
   "maxActiveRequestsTip": "प्रति ऐप सक्रिय अनुरोधों की अधिकतम संख्या (असीमित के लिए 0)",
+  "permissions": "Permissions",
   "mermaid.preview": "आरेख का पूर्वावलोकन",
   "newApp.Cancel": "रद्द करें",
   "newApp.Confirm": "सुदृढ़ करना",

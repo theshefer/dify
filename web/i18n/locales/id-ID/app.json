@@ -162,6 +162,7 @@
   "maxActiveRequests": "Permintaan bersamaan maksimum",
   "maxActiveRequestsPlaceholder": "Masukkan 0 untuk tidak terbatas",
   "maxActiveRequestsTip": "Jumlah maksimum permintaan aktif bersamaan per aplikasi (0 untuk tidak terbatas)",
+  "permissions": "Permissions",
   "mermaid.preview": "Pratinjau diagram",
   "newApp.Cancel": "Batal",
   "newApp.Confirm": "Konfirmasi",

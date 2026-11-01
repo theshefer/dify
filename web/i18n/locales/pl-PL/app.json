@@ -162,6 +162,7 @@
   "maxActiveRequests": "Maksymalne równoczesne żądania",
   "maxActiveRequestsPlaceholder": "Wprowadź 0, aby uzyskać nielimitowane",
   "maxActiveRequestsTip": "Maksymalna liczba jednoczesnych aktywnych żądań na aplikację (0 dla nieograniczonej)",
+  "permissions": "Permissions",
   "mermaid.preview": "Podgląd diagramu",
   "newApp.Cancel": "Anuluj",
   "newApp.Confirm": "Potwierdzić",

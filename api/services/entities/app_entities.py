@@ -8,6 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from models.enums import PermissionEnum
 from models.model import AppMode, IconType
 from services.entities.dsl_entities import DslImportWarning
 
@@ -126,6 +127,7 @@ class CreateAppParams(BaseModel):
     api_rph: int = 0
     api_rpm: int = 0
     max_active_requests: int | None = None
+    permission: PermissionEnum | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -168,6 +170,8 @@ class AppRecord:
     deleted_tools: list[dict[str, str]] = field(default_factory=list)
     tool_references: tuple[AppToolReference, ...] = ()
     access_mode: str | None = None
+    permission: PermissionEnum | None = None
+    partial_member_list: list[str] = field(default_factory=list)
     permission_keys: list[str] = field(default_factory=list)
     has_draft_trigger: bool | None = None
     is_starred: bool = False
@@ -191,6 +195,8 @@ class UpdateAppParams(BaseModel):
     icon_background: str = ""
     use_icon_as_answer_icon: bool = False
     max_active_requests: int = 0
+    permission: PermissionEnum | None = None
+    partial_member_list: list[dict[str, str]] | None = None
 
 
 class CopyAppParams(BaseModel):
@@ -264,6 +270,7 @@ class AppUpdateArguments(TypedDict):
     use_icon_as_answer_icon: bool
     max_active_requests: int
     role: NotRequired[str | None]
+    permission: NotRequired[PermissionEnum | None]
 
 
 class AppFieldChanges(TypedDict, total=False):

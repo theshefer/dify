@@ -8,7 +8,7 @@ from enums import WebAppAccessMode
 from fields.app_model_config_response import AppModelConfigResponse, AppModelSelectionResponse
 from fields.base import ResponseModel
 from libs.helper import build_icon_url, to_timestamp
-from models.enums import CustomizeTokenStrategy
+from models.enums import CustomizeTokenStrategy, PermissionEnum
 from models.model import AppMode, IconType
 from services.entities.app_entities import RecentAppMode
 from services.entities.dsl_entities import DslImportWarning, ImportStatus
@@ -129,6 +129,8 @@ class AppPartial(ResponseModel):
     create_user_name: str | None = None
     author_name: str | None = None
     has_draft_trigger: bool | None = None
+    permission: PermissionEnum | None = None
+    partial_member_list: list[str] = Field(default_factory=list)
     permission_keys: list[str] = Field(default_factory=list)
     # For Agent App type: the roster Agent backing this app (None otherwise).
     bound_agent_id: str | None = None
@@ -197,6 +199,8 @@ class AppDetail(ResponseModel):
     updated_at: int
     access_mode: WebAppAccessMode | None
     tags: list[Tag]
+    permission: PermissionEnum | None = None
+    partial_member_list: list[str] = Field(default_factory=list)
     permission_keys: list[str]
     maintainer: str | None
 

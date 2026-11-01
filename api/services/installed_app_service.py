@@ -67,6 +67,7 @@ class InstalledAppStore(Protocol):
         self,
         *,
         tenant_id: str,
+        user_id: str,
         cursor: InstalledAppCursor | None,
         limit: int,
         app_id: str | None,
@@ -120,6 +121,7 @@ class InstalledAppService:
             # before the optional Enterprise request.
             candidate_rows = self._installed_apps.get_candidates(
                 tenant_id=tenant_id,
+                user_id=user_id,
                 cursor=scan_cursor,
                 limit=scan_size,
                 app_id=app_id,

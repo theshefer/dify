@@ -162,6 +162,7 @@
   "maxActiveRequests": "أقصى عدد للطلبات المتزامنة",
   "maxActiveRequestsPlaceholder": "أدخل 0 لغير محدود",
   "maxActiveRequestsTip": "الحد الأقصى لعدد الطلبات النشطة المتزامنة لكل تطبيق (0 لغير محدود)",
+  "permissions": "Permissions",
   "mermaid.preview": "معاينة المخطط",
   "newApp.Cancel": "إلغاء",
   "newApp.Confirm": "تأكيد",

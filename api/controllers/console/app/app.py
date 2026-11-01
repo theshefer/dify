@@ -59,7 +59,7 @@ from libs.flask_restx_compat import BINARY_RESPONSE_MEDIA_TYPES_VENDOR_KEY
 from libs.helper import dump_response
 from libs.url_utils import normalize_api_base_url
 from machinery.context import RequestContext
-from models import DatasetPermissionEnum
+from models import PermissionEnum
 from models.account import TenantAccountRole
 from models.model import IconType
 from services.agent.errors import RosterAgentPackageExportFailedError
@@ -183,6 +183,7 @@ class CreateAppPayload(BaseModel):
     icon_type: IconType | None = Field(default=None, description="Icon type")
     icon: str | None = Field(default=None, description="Icon")
     icon_background: str | None = Field(default=None, description="Icon background color")
+    permission: PermissionEnum | None = Field(default=PermissionEnum.ONLY_ME, description="Collaboration permission")
 
 
 class UpdateAppPayload(BaseModel):
@@ -193,6 +194,14 @@ class UpdateAppPayload(BaseModel):
     icon_background: str | None = Field(default=None, description="Icon background color")
     use_icon_as_answer_icon: bool | None = Field(default=None, description="Use icon as answer icon")
     max_active_requests: int | None = Field(default=None, description="Maximum active requests")
+    permission: PermissionEnum | None = Field(default=None, description="Collaboration permission")
+    partial_member_list: list[dict[str, str]] | None = Field(
+        default=None, description="Partial member user ids when permission is partial_members"
+    )
+
+
+class AppPartialMemberListResponse(BaseModel):
+    data: list[str] = Field(default_factory=list, description="Account IDs with partial access")
 
 
 class CopyAppPayload(BaseModel):
@@ -255,7 +264,7 @@ class AppTracePayload(BaseModel):
         return self
 
 
-register_enum_models(console_ns, RetrievalMethod, WorkflowExecutionStatus, DatasetPermissionEnum)
+register_enum_models(console_ns, RetrievalMethod, WorkflowExecutionStatus, PermissionEnum)
 register_response_schema_models(
     console_ns,
     RedirectUrlResponse,
@@ -264,6 +273,7 @@ register_response_schema_models(
     AppTraceResponse,
     AppModelConfigResponse,
     AppDetail,
+    AppPartialMemberListResponse,
 )
 
 register_schema_models(
@@ -465,6 +475,8 @@ class AppApi(AppResource):
             icon_background=payload.icon_background or "",
             use_icon_as_answer_icon=payload.use_icon_as_answer_icon or False,
             max_active_requests=payload.max_active_requests or 0,
+            permission=payload.permission,
+            partial_member_list=payload.partial_member_list,
         )
         response = _app_detail_response(application_services().apps.console.update(context, str(app_id), params))
         return dump_response(AppDetailWithSite, response)
@@ -484,6 +496,29 @@ class AppApi(AppResource):
     def delete(self, context: RequestContext, app_id: uuid.UUID):
         application_services().apps.console.delete(context, str(app_id))
         return "", HTTPStatus.NO_CONTENT
+
+
+
+
+@console_ns.route("/apps/<uuid:app_id>/permission-part-users")
+class AppPermissionUserListApi(AppResource):
+    @console_ns.doc("get_app_permission_users")
+    @console_ns.doc(description="Get app permission partial member list")
+    @console_ns.doc(params={"app_id": "Application ID"})
+    @console_ns.response(
+        HTTPStatus.OK,
+        "Permission users retrieved successfully",
+        console_ns.models[AppPartialMemberListResponse.__name__],
+    )
+    @console_ns.response(HTTPStatus.NOT_FOUND, "App not found")
+    @console_ns.response(HTTPStatus.FORBIDDEN, "Permission denied")
+    @console_account_admission(
+        require_valid_enterprise_license=True,
+        rbac_checks=[RBACCheck(RBACPermission.APP_VIEW_LAYOUT, PlainApp())],
+    )
+    def get(self, context: RequestContext, app_id: uuid.UUID):
+        app = application_services().apps.console.get(context, str(app_id))
+        return dump_response(AppPartialMemberListResponse, {"data": app.partial_member_list}), HTTPStatus.OK
 
 
 @console_ns.route("/apps/<uuid:app_id>/copy")

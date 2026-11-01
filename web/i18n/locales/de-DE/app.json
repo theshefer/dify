@@ -162,6 +162,7 @@
   "maxActiveRequests": "Maximale gleichzeitige Anfragen",
   "maxActiveRequestsPlaceholder": "Geben Sie 0 für unbegrenzt ein",
   "maxActiveRequestsTip": "Maximale Anzahl gleichzeitiger aktiver Anfragen pro App (0 für unbegrenzt)",
+  "permissions": "Permissions",
   "mermaid.preview": "Diagrammvorschau",
   "newApp.Cancel": "Abbrechen",
   "newApp.Confirm": "Bestätigen",

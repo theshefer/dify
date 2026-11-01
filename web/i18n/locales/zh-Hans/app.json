@@ -162,6 +162,7 @@
   "maxActiveRequests": "最大活跃请求数",
   "maxActiveRequestsPlaceholder": "0 表示不限制",
   "maxActiveRequestsTip": "当前应用的最大活跃请求数（0 表示不限制）",
+  "permissions": "Permissions",
   "mermaid.preview": "预览图表",
   "newApp.Cancel": "取消",
   "newApp.Confirm": "确认",

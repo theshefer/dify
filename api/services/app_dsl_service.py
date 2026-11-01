@@ -51,7 +51,7 @@ from graphon.nodes.question_classifier.entities import QuestionClassifierNodeDat
 from graphon.nodes.tool.entities import ToolNodeData, ToolProviderType
 from libs.datetime_utils import naive_utc_now
 from libs.url_utils import github_blob_to_raw_url
-from models import Account, App, AppMode
+from models import Account, App, AppMode, PermissionEnum
 from models.agent import AgentScope, WorkflowAgentBindingType, WorkflowAgentNodeBinding
 from models.agent_config_entities import WorkflowNodeJobConfig
 from models.model import AppModelConfig, AppModelConfigDict, IconType, load_annotation_reply_config
@@ -735,6 +735,7 @@ class AppDslService:
             app.enable_site = app_mode != AppMode.AGENT
             app.enable_api = app_mode != AppMode.AGENT
             app.use_icon_as_answer_icon = app_data.get("use_icon_as_answer_icon", False)
+            app.permission = PermissionEnum.ONLY_ME
             app.created_by = account.id
             app.maintainer = account.id
             app.updated_by = account.id

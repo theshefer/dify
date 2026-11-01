@@ -77,6 +77,7 @@ def app_record(
         enable_site=app.enable_site,
         enable_api=app.enable_api,
         max_active_requests=app.max_active_requests,
+        permission=app.permission,
         use_icon_as_answer_icon=app.use_icon_as_answer_icon,
         created_by=app.created_by,
         created_at=app.created_at,

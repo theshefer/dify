@@ -162,6 +162,7 @@
   "maxActiveRequests": "Максимальное количество параллельных запросов",
   "maxActiveRequestsPlaceholder": "Введите 0 для неограниченного количества",
   "maxActiveRequestsTip": "Максимальное количество одновременно активных запросов на одно приложение (0 для неограниченного количества)",
+  "permissions": "Permissions",
   "mermaid.preview": "Предпросмотр диаграммы",
   "newApp.Cancel": "Отмена",
   "newApp.Confirm": "Подтверждать",

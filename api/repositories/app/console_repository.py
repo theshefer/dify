@@ -19,6 +19,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
+from configs import dify_config
 from core.agent.publish_visibility import agent_has_workflow_callable_active_snapshot
 from core.trigger.constants import TRIGGER_NODE_TYPES
 from libs.datetime_utils import naive_utc_now
@@ -35,7 +36,7 @@ from models.agent import (
     WorkflowAgentBindingType,
     WorkflowAgentNodeBinding,
 )
-from models.enums import AppStatus
+from models.enums import AppStatus, PermissionEnum
 from models.model import App, AppMode, AppModelConfig, AppStar, IconType
 from models.skill import AgentSkillBinding
 from models.workflow import Workflow
@@ -45,6 +46,11 @@ from repositories.tag_repository import TagRepository
 from services.agent.errors import (
     AgentAccessNotReadyError,
     AgentNameConflictError,
+)
+from services.app.collaboration import (
+    AppPermissionService,
+    build_collaboration_visibility_filter,
+    check_app_collaboration_permission,
 )
 from services.app.console_service import ConsoleAppNotFoundError, ConsoleApps
 from services.app.query_service import AppDescription, DiscoveryApps, RelatedApps
@@ -103,6 +109,9 @@ def require_console_app(session: Session, context: RequestContext, app_id: str) 
     app = find_console_app(session, workspace_id=context.active_workspace_id, app_id=app_id)
     if app is None:
         raise ConsoleAppNotFoundError("App not found")
+    if not dify_config.RBAC_ENABLED:
+        account = console_app_actor(session, context)
+        check_app_collaboration_permission(app, account, session)
     return app
 
 
@@ -213,6 +222,7 @@ class ConsoleAppRepository(ConsoleApps, DiscoveryApps, RelatedApps):
             if page is None:
                 return AppPage(page=params.page, limit=params.limit, total=0, has_more=False, data=[])
             trigger_app_ids = self._draft_trigger_app_ids(session, context.active_workspace_id, page.items)
+            partial_map = AppPermissionService.load_partial_members_map(session, apps=list(page.items))
             return AppPage(
                 page=page.page,
                 limit=page.per_page,
@@ -222,6 +232,9 @@ class ConsoleAppRepository(ConsoleApps, DiscoveryApps, RelatedApps):
                     replace(
                         app_record(app, session=session),
                         has_draft_trigger=app.id in trigger_app_ids,
+                        partial_member_list=(
+                            partial_map.get(app.id, []) if app.permission == PermissionEnum.PARTIAL_TEAM else []
+                        ),
                     )
                     for app in page.items
                 ],
@@ -236,12 +249,27 @@ class ConsoleAppRepository(ConsoleApps, DiscoveryApps, RelatedApps):
     def get(self, context: RequestContext, app_id: str) -> AppRecord:
         with self._session_factory() as session:
             app = require_console_app(session, context, app_id)
-            return app_record(app, session=session, projection="detail-with-site")
+            record = app_record(app, session=session, projection="detail-with-site")
+            partial_members = (
+                AppPermissionService.get_app_partial_member_list(str(app.id), session)
+                if app.permission == PermissionEnum.PARTIAL_TEAM
+                else []
+            )
+            return replace(record, partial_member_list=partial_members)
 
     @override
     def update(self, context: RequestContext, app_id: str, params: UpdateAppParams) -> AppRecord:
         with self._session_factory() as session:
             app = require_console_app(session, context, app_id)
+            account = console_app_actor(session, context)
+            if not dify_config.RBAC_ENABLED and params.permission is not None:
+                AppPermissionService.check_permission(
+                    account,
+                    app,
+                    params.permission,
+                    params.partial_member_list,
+                    session=session,
+                )
             changes: AppUpdateArguments = {
                 "name": params.name,
                 "description": params.description,
@@ -252,8 +280,25 @@ class ConsoleAppRepository(ConsoleApps, DiscoveryApps, RelatedApps):
                 "max_active_requests": params.max_active_requests,
                 "role": params.role,
             }
+            if params.permission is not None:
+                changes["permission"] = params.permission
             app = self.update_app(app, changes, account_id=context.account_id, session=session)
-            return app_record(app, session=session, projection="detail-with-site")
+            app_id_str = str(app.id)
+            if params.partial_member_list is not None and params.permission == PermissionEnum.PARTIAL_TEAM:
+                AppPermissionService.update_partial_member_list(
+                    context.active_workspace_id, app_id_str, params.partial_member_list, session
+                )
+                session.commit()
+            elif params.permission in {PermissionEnum.ONLY_ME, PermissionEnum.ALL_TEAM}:
+                AppPermissionService.clear_partial_member_list(app_id_str, session)
+                session.commit()
+            record = app_record(app, session=session, projection="detail-with-site")
+            partial_members = (
+                AppPermissionService.get_app_partial_member_list(app_id_str, session)
+                if app.permission == PermissionEnum.PARTIAL_TEAM
+                else []
+            )
+            return replace(record, partial_member_list=partial_members)
 
     @override
     def update_fields(self, context: RequestContext, app_id: str, changes: AppFieldChanges) -> AppRecord:
@@ -414,6 +459,10 @@ class ConsoleAppRepository(ConsoleApps, DiscoveryApps, RelatedApps):
             filters.append(App.created_by == user_id)
         elif params.accessible_app_ids is not None:
             filters.append(sa.or_(App.maintainer == user_id, App.id.in_(params.accessible_app_ids)))
+        else:
+            collaboration_filter = build_collaboration_visibility_filter(user_id, tenant_id, session)
+            if collaboration_filter is not None:
+                filters.append(collaboration_filter)
         if params.resource_app_ids is not None:
             filters.append(App.id.in_(params.resource_app_ids))
         if params.creator_ids:
@@ -676,6 +725,7 @@ class ConsoleAppRepository(ConsoleApps, DiscoveryApps, RelatedApps):
         app.api_rph = params.api_rph
         app.api_rpm = params.api_rpm
         app.max_active_requests = params.max_active_requests
+        app.permission = params.permission or PermissionEnum.ONLY_ME
         app.created_by = account.id
         app.maintainer = account.id
         app.updated_by = account.id
@@ -803,6 +853,8 @@ class ConsoleAppRepository(ConsoleApps, DiscoveryApps, RelatedApps):
         app.icon_background = args["icon_background"]
         app.use_icon_as_answer_icon = args.get("use_icon_as_answer_icon", False)
         app.max_active_requests = args.get("max_active_requests")
+        if "permission" in args and args["permission"] is not None:
+            app.permission = args["permission"]
         app.updated_by = account_id
         app.updated_at = naive_utc_now()
         cls._sync_backing_agent_identity(
@@ -1036,6 +1088,7 @@ class ConsoleAppRepository(ConsoleApps, DiscoveryApps, RelatedApps):
             ).all()
             retired_binding_ids = [binding.id for binding in bindings]
 
+        AppPermissionService.clear_partial_member_list(app.id, session)
         session.delete(app)
         result = AppDeletion(
             app_event,

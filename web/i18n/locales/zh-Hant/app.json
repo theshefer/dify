@@ -162,6 +162,7 @@
   "maxActiveRequests": "同時最大請求數",
   "maxActiveRequestsPlaceholder": "輸入 0 以表示無限",
   "maxActiveRequestsTip": "每個應用程式可同時活躍請求的最大數量（0為無限制）",
+  "permissions": "Permissions",
   "mermaid.preview": "預覽圖表",
   "newApp.Cancel": "取消",
   "newApp.Confirm": "確認",

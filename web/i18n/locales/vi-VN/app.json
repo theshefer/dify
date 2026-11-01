@@ -162,6 +162,7 @@
   "maxActiveRequests": "Số yêu cầu đồng thời tối đa",
   "maxActiveRequestsPlaceholder": "Nhập 0 để không giới hạn",
   "maxActiveRequestsTip": "Số yêu cầu hoạt động đồng thời tối đa cho mỗi ứng dụng (0 để không giới hạn)",
+  "permissions": "Permissions",
   "mermaid.preview": "Xem trước sơ đồ",
   "newApp.Cancel": "Hủy",
   "newApp.Confirm": "Xác nhận",

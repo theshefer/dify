@@ -162,6 +162,7 @@
   "maxActiveRequests": "بیشترین درخواست‌های همزمان",
   "maxActiveRequestsPlaceholder": "برای نامحدود، 0 را وارد کنید",
   "maxActiveRequestsTip": "حداکثر تعداد درخواست‌های فعال همزمان در هر برنامه (0 برای نامحدود)",
+  "permissions": "Permissions",
   "mermaid.preview": "پیش‌نمایش نمودار",
   "newApp.Cancel": "لغو",
   "newApp.Confirm": "تایید",

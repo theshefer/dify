@@ -162,6 +162,7 @@
   "maxActiveRequests": "最大同時リクエスト数",
   "maxActiveRequestsPlaceholder": "無制限のために0を入力してください",
   "maxActiveRequestsTip": "アプリごとの同時アクティブリクエストの最大数（無制限の場合は0）",
+  "permissions": "Permissions",
   "mermaid.preview": "図をプレビュー",
   "newApp.Cancel": "キャンセル",
   "newApp.Confirm": "確認する",

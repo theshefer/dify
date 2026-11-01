@@ -1666,6 +1666,7 @@ export const zCreateAppPayload = z.object({
   icon_type: zIconType.nullish(),
   mode: z.enum(['advanced-chat', 'agent-chat', 'chat', 'completion', 'workflow']),
   name: z.string().min(1),
+  permission: z.enum(['only_me', 'all_team_members', 'partial_members']).nullish(),
 })
 
 /**
@@ -1678,6 +1679,8 @@ export const zUpdateAppPayload = z.object({
   icon_type: zIconType.nullish(),
   max_active_requests: z.int().nullish(),
   name: z.string().min(1),
+  partial_member_list: z.array(z.record(z.string(), z.string())).nullish(),
+  permission: z.enum(['only_me', 'all_team_members', 'partial_members']).nullish(),
   use_icon_as_answer_icon: z.boolean().nullish(),
 })
 
@@ -4420,6 +4423,8 @@ export const zAppPartial = z.object({
   mode: zAppMode,
   model_config: zModelConfigPartial.nullish(),
   name: z.string(),
+  partial_member_list: z.array(z.string()).optional(),
+  permission: z.enum(['only_me', 'all_team_members', 'partial_members']).nullish(),
   permission_keys: z.array(z.string()).optional(),
   tags: z.array(zTag).optional(),
   updated_at: z.int().nullish(),
@@ -5517,6 +5522,8 @@ export const zAppDetailWithSite = z.object({
   mode: zAppMode,
   model_config: zAppModelConfigResponse.nullable(),
   name: z.string(),
+  partial_member_list: z.array(z.string()).optional(),
+  permission: z.enum(['only_me', 'all_team_members', 'partial_members']).nullish(),
   permission_keys: z.array(z.string()),
   site: zAppDetailSiteResponse.nullable(),
   tags: z.array(zTag),
@@ -5544,6 +5551,8 @@ export const zAppDetail = z.object({
   mode: zAppMode,
   model_config: zAppModelConfigResponse.nullable(),
   name: z.string(),
+  partial_member_list: z.array(z.string()).optional(),
+  permission: z.enum(['only_me', 'all_team_members', 'partial_members']).nullish(),
   permission_keys: z.array(z.string()),
   tags: z.array(zTag),
   tracing: z.string().nullable(),
@@ -6364,6 +6373,8 @@ export const zAppPartialWritable = z.object({
   mode: zAppMode,
   model_config: zModelConfigPartial.nullish(),
   name: z.string(),
+  partial_member_list: z.array(z.string()).optional(),
+  permission: z.enum(['only_me', 'all_team_members', 'partial_members']).nullish(),
   permission_keys: z.array(z.string()).optional(),
   tags: z.array(zTag).optional(),
   updated_at: z.int().nullish(),
@@ -6436,6 +6447,8 @@ export const zAppDetailWithSiteWritable = z.object({
   mode: zAppMode,
   model_config: zAppModelConfigResponse.nullable(),
   name: z.string(),
+  partial_member_list: z.array(z.string()).optional(),
+  permission: z.enum(['only_me', 'all_team_members', 'partial_members']).nullish(),
   permission_keys: z.array(z.string()),
   site: zAppDetailSiteResponseWritable.nullable(),
   tags: z.array(zTag),

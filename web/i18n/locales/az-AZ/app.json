@@ -162,6 +162,7 @@
   "maxActiveRequests": "Maksimum eynivaxtlı sorğu sayı",
   "maxActiveRequestsPlaceholder": "Məhdudiyyətsiz olması üçün 0 daxil edin",
   "maxActiveRequestsTip": "Hər tətbiq üçün eynivaxtlı aktiv sorğuların maksimum sayı (məhdudiyyətsiz olması üçün 0)",
+  "permissions": "Permissions",
   "mermaid.preview": "Diaqramın önizləməsi",
   "newApp.Cancel": "Ləğv et",
   "newApp.Confirm": "Təsdiqlə",

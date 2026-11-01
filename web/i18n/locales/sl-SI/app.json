@@ -162,6 +162,7 @@
   "maxActiveRequests": "Maksimalno število hkratnih zahtevkov",
   "maxActiveRequestsPlaceholder": "Vnesite 0 za neomejeno",
   "maxActiveRequestsTip": "Največje število hkrati aktivnih zahtevkov na aplikacijo (0 za neomejeno)",
+  "permissions": "Permissions",
   "mermaid.preview": "Predogled diagrama",
   "newApp.Cancel": "Prekliči",
   "newApp.Confirm": "Potrditi",

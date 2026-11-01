@@ -162,6 +162,7 @@
   "maxActiveRequests": "Max concurrent requests",
   "maxActiveRequestsPlaceholder": "Enter 0 for unlimited",
   "maxActiveRequestsTip": "Maximum number of concurrent active requests per app (0 for unlimited)",
+  "permissions": "Permissions",
   "mermaid.preview": "Preview diagram",
   "newApp.Cancel": "Cancel",
   "newApp.Confirm": "Confirm",

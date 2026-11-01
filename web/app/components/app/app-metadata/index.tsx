@@ -1,8 +1,10 @@
 'use client'
 
 import type { AppPartial, UpdateAppPayload } from '@dify/contracts/api/console/apps/types.gen'
+import type { AccountWithRoleResponse } from '@dify/contracts/api/console/workspaces/types.gen'
 import type { HotkeyChord } from '@tanstack/react-hotkeys'
 import type { IconPickerInputValue, IconPickerValue } from '@/app/components/base/icon-picker'
+import type { PermissionLevel } from '@/models/permission'
 import { Button } from '@langgenius/dify-ui/button'
 import {
   DialogBody,
@@ -29,7 +31,7 @@ import { Switch } from '@langgenius/dify-ui/switch'
 import { Textarea } from '@langgenius/dify-ui/textarea'
 import { formatForDisplay, matchesKeyboardEvent } from '@tanstack/react-hotkeys'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
-import { useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   IconPicker,
@@ -38,7 +40,9 @@ import {
   IconPickerTrigger,
 } from '@/app/components/base/icon-picker'
 import AppsFull from '@/app/components/billing/apps-full-in-dialog'
+import PermissionSelector from '@/app/components/datasets/settings/permission-selector'
 import { systemFeaturesQueryOptions } from '@/features/system-features/client'
+import { PermissionLevel as PermissionLevelEnum } from '@/models/permission'
 import { consoleQuery } from '@/service/console'
 
 const SUBMIT_APP_HOTKEY = 'Mod+Enter' satisfies HotkeyChord
@@ -55,7 +59,7 @@ type AppMetadataFormProps = {
     | 'use_icon_as_answer_icon'
     | 'max_active_requests'
   > &
-    Partial<Pick<AppPartial, 'mode'>>
+    Partial<Pick<AppPartial, 'mode' | 'permission' | 'partial_member_list'>>
   operation: 'edit' | 'duplicate' | 'create'
   nameInputRef: React.RefObject<HTMLInputElement | null>
   isPending: boolean
@@ -73,13 +77,28 @@ export function AppMetadataForm({
 }: AppMetadataFormProps) {
   const { t } = useTranslation(['app', 'common', 'explore'])
   const formRef = useRef<HTMLFormElement>(null)
+  const permissionLabelId = useId()
   const [source] = useState(appDetail)
   const [selectedIcon, setSelectedIcon] = useState<IconPickerValue | null>(null)
+  const [permission, setPermission] = useState<PermissionLevel | undefined>(
+    (source.permission as PermissionLevel | undefined) ?? PermissionLevelEnum.onlyMe,
+  )
+  const [selectedMemberIDs, setSelectedMemberIDs] = useState<string[]>(source.partial_member_list ?? [])
   const { data: deploymentEdition } = useSuspenseQuery({
     ...systemFeaturesQueryOptions(),
     select: (data) => data.deployment_edition,
   })
   const isEdit = operation === 'edit'
+  const { data: membersData } = useQuery(
+    consoleQuery.workspaces.current.members.get.queryOptions({
+      input: {},
+      enabled: isEdit,
+    }),
+  )
+  const memberList = useMemo<AccountWithRoleResponse[]>(
+    () => membersData?.accounts ?? [],
+    [membersData],
+  )
   const { data: quota } = useQuery(
     consoleQuery.features.get.queryOptions({
       enabled: !isEdit && deploymentEdition === 'CLOUD',
@@ -149,6 +168,13 @@ export function AppMetadataForm({
               : (source.use_icon_as_answer_icon ?? false)
           if (typeof values.max_active_requests === 'number')
             body.max_active_requests = values.max_active_requests
+          if (permission) {
+            body.permission = permission
+            body.partial_member_list =
+              permission === PermissionLevelEnum.partialMembers
+                ? selectedMemberIDs.map((id) => ({ user_id: id }))
+                : []
+          }
         }
         onSubmit(body)
       }}
@@ -252,6 +278,20 @@ export function AppMetadataForm({
               <FieldDescription>{t(($) => $.maxActiveRequestsTip, { ns: 'app' })}</FieldDescription>
               <FieldError />
             </Field>
+            <div className="flex flex-col gap-2">
+              <div id={permissionLabelId} className="system-sm-medium text-text-secondary">
+                {t(($) => $.permissions, { ns: 'app' })}
+              </div>
+              <PermissionSelector
+                aria-labelledby={permissionLabelId}
+                permission={permission}
+                value={selectedMemberIDs}
+                onChange={(value) => setPermission(value)}
+                onMemberSelect={setSelectedMemberIDs}
+                memberList={memberList}
+                disabled={isPending}
+              />
+            </div>
           </>
         )}
         {isFull && (

@@ -48,6 +48,7 @@ from .enums import (
     MessageChainType,
     MessageFileBelongsTo,
     MessageStatus,
+    PermissionEnum,
     PromptType,
     ProviderQuotaType,
     TagType,
@@ -456,6 +457,11 @@ class App(TypeBase):
     is_universal: Mapped[bool] = mapped_column(sa.Boolean, server_default=sa.false(), default=False)
     tracing: Mapped[str | None] = mapped_column(LongText, nullable=True, default=None)
     max_active_requests: Mapped[int | None] = mapped_column(nullable=True, default=None)
+    permission: Mapped[PermissionEnum] = mapped_column(
+        EnumText(PermissionEnum, length=255),
+        server_default=sa.text("'only_me'"),
+        default=PermissionEnum.ONLY_ME,
+    )
     created_by: Mapped[str | None] = mapped_column(StringUUID, nullable=True, default=None)
     maintainer: Mapped[str | None] = mapped_column(StringUUID, nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(
@@ -713,6 +719,38 @@ class App(TypeBase):
                 return account.name
 
         return None
+
+
+
+class AppPermission(TypeBase):
+    """Join table for partial-member access control on console apps.
+
+    Mirrors DatasetPermission for only_me / all_team_members / partial_members
+    collaboration on chatflows, workflows, and agent apps.
+    """
+
+    __tablename__ = "app_permissions"
+    __table_args__ = (
+        sa.PrimaryKeyConstraint("id", name="app_permission_pkey"),
+        sa.Index("idx_app_permissions_app_id", "app_id"),
+        sa.Index("idx_app_permissions_account_id", "account_id"),
+        sa.Index("idx_app_permissions_tenant_id", "tenant_id"),
+    )
+
+    id: Mapped[str] = mapped_column(
+        StringUUID,
+        insert_default=lambda: str(uuid4()),
+        default_factory=lambda: str(uuid4()),
+        primary_key=True,
+        init=False,
+    )
+    app_id: Mapped[str] = mapped_column(StringUUID, nullable=False)
+    account_id: Mapped[str] = mapped_column(StringUUID, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(StringUUID, nullable=False)
+    has_permission: Mapped[bool] = mapped_column(sa.Boolean, nullable=False, server_default=sa.true(), default=True)
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime, nullable=False, server_default=func.current_timestamp(), init=False
+    )
 
 
 class AppStar(TypeBase):

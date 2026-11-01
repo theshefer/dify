@@ -11,7 +11,9 @@ from typing import cast, overload
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, scoped_session
+from werkzeug.exceptions import Forbidden
 
+from configs import dify_config
 from controllers.common.session import with_session
 from controllers.console.app.error import AppNotFoundError
 from extensions.ext_database import db
@@ -20,11 +22,24 @@ from libs.login import current_account_with_tenant
 from models import App, AppMode
 from models.agent import AgentScope
 from models.enums import AppStatus
+from services.app.collaboration import check_app_collaboration_permission
+from services.errors.base import NoPermissionError
 
 __all__ = [
     "get_app_model",
     "with_session",
 ]
+
+
+def _enforce_app_collaboration_permission(app_model: App, session: Session | scoped_session) -> None:
+    """Apply legacy only_me / partial_members checks when RBAC is disabled."""
+    if dify_config.RBAC_ENABLED:
+        return
+    current_user, _ = current_account_with_tenant()
+    try:
+        check_app_collaboration_permission(app_model, current_user, session)
+    except NoPermissionError as exc:
+        raise Forbidden(str(exc)) from exc
 
 
 def _load_app_model(session: Session | scoped_session, app_id: str) -> App | None:
@@ -43,6 +58,7 @@ def _load_app_model(session: Session | scoped_session, app_id: str) -> App | Non
         binding = app_model.agent_app_binding_with_session(session=session, include_archived=True)
         if binding is not None and binding.scope == AgentScope.WORKFLOW_ONLY:
             return None
+        _enforce_app_collaboration_permission(app_model, session)
     return app_model
 
 

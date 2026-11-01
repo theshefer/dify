@@ -9,6 +9,12 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import Session, sessionmaker
 
 from libs.helper import escape_like_pattern
+from models.account import Account, Tenant
+from services.app.collaboration import (
+    build_collaboration_visibility_filter,
+    check_app_collaboration_permission,
+)
+from services.errors.base import NoPermissionError
 from models.model import App, AppMode, AppModelConfig, InstalledApp
 from models.workflow import Workflow
 from services.installed_app_access_service import InstalledAppAccessStore, InstalledAppNotFoundError, InstalledAppRef
@@ -124,6 +130,23 @@ class SQLAlchemyInstalledAppRepository(InstalledAppAccessStore, InstalledAppUsag
                 app_mode=app.mode.value,
             )
 
+
+    @override
+    def ensure_collaboration_access(self, *, app_id: str, tenant_id: str, account_id: str) -> None:
+        with self._session_factory() as session:
+            app = session.scalar(select(App).where(App.id == app_id).limit(1))
+            if app is None:
+                raise InstalledAppNotFoundError("Installed app not found")
+            account = session.get(Account, account_id)
+            tenant = session.get(Tenant, tenant_id)
+            if account is None or tenant is None:
+                raise PermissionError("Workspace membership not found")
+            account.set_current_tenant_with_session(tenant, session=session)
+            try:
+                check_app_collaboration_permission(app, account, session)
+            except NoPermissionError as error:
+                raise PermissionError(str(error)) from error
+
     @override
     def record(self, *, installed_app: InstalledAppRef, used_at: datetime) -> None:
         """Commit usage independently so generation failures do not roll it back."""
@@ -145,6 +168,7 @@ class SQLAlchemyInstalledAppRepository(InstalledAppAccessStore, InstalledAppUsag
         self,
         *,
         tenant_id: str,
+        user_id: str,
         cursor: InstalledAppCursor | None,
         limit: int,
         app_id: str | None,
@@ -163,6 +187,9 @@ class SQLAlchemyInstalledAppRepository(InstalledAppAccessStore, InstalledAppUsag
         if cursor is not None:
             statement = statement.where(_installed_app_cursor_filter(cursor))
         with self._session_factory() as session:
+            collaboration_filter = build_collaboration_visibility_filter(user_id, tenant_id, session)
+            if collaboration_filter is not None:
+                statement = statement.where(collaboration_filter)
             rows = session.execute(statement.order_by(*_installed_app_order_by()).limit(limit))
             return tuple(starmap(_to_record, rows))
 

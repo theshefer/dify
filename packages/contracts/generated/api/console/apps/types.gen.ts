@@ -29,7 +29,10 @@ export type CreateAppPayload = {
   icon_type?: IconType | null
   mode: 'advanced-chat' | 'agent-chat' | 'chat' | 'completion' | 'workflow'
   name: string
+  permission?: 'only_me' | 'all_team_members' | 'partial_members' | null
 }
+  // patched: collaboration permission
+
 
 export type AppDetailWithSite = {
   access_mode: WebAppAccessMode | null
@@ -52,6 +55,8 @@ export type AppDetailWithSite = {
   mode: AppMode
   model_config: AppModelConfigResponse | null
   name: string
+  partial_member_list?: Array<string>
+  permission?: 'only_me' | 'all_team_members' | 'partial_members' | null
   permission_keys: Array<string>
   site: AppDetailSiteResponse | null
   tags: Array<Tag>
@@ -147,6 +152,10 @@ export type UpdateAppPayload = {
   icon_type?: IconType | null
   max_active_requests?: number | null
   name: string
+  partial_member_list?: Array<{
+    [key: string]: string
+  }> | null
+  permission?: 'only_me' | 'all_team_members' | 'partial_members' | null
   use_icon_as_answer_icon?: boolean | null
 }
 
@@ -449,6 +458,8 @@ export type AppApiStatusPayload = {
 }
 
 export type AppDetail = {
+  partial_member_list?: Array<string>
+  permission?: 'only_me' | 'all_team_members' | 'partial_members' | null
   access_mode: WebAppAccessMode | null
   created_at: number
   created_by: string | null
@@ -1687,6 +1698,8 @@ export type AppPartial = {
   mode: AppMode
   model_config?: ModelConfigPartial | null
   name: string
+  partial_member_list?: Array<string>
+  permission?: 'only_me' | 'all_team_members' | 'partial_members' | null
   permission_keys?: Array<string>
   tags?: Array<Tag>
   updated_at?: number | null

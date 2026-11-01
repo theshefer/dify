@@ -162,6 +162,7 @@
   "maxActiveRequests": "ຈຳນວນການຮ້ອງຂໍພ້ອມກັນສູງສຸດ",
   "maxActiveRequestsPlaceholder": "ປ້ອນ 0 ສຳລັບແບບບໍ່ຈຳກັດ",
   "maxActiveRequestsTip": "ຈຳນວນສູງສຸດຂອງການຮ້ອງຂໍທີ່ເຮັດວຽກພ້ອມກັນຕໍ່ແອັບ (0 ແມ່ນບໍ່ຈຳກັດ)",
+  "permissions": "Permissions",
   "mermaid.preview": "ເບິ່ງແຜນວາດລ່ວງໜ້າ",
   "newApp.Cancel": "ຍົກເລີກ",
   "newApp.Confirm": "ຢືນຢັນ",

@@ -162,6 +162,7 @@
   "maxActiveRequests": "Максимальна кількість одночасних запитів",
   "maxActiveRequestsPlaceholder": "Введіть 0 для необмеженого",
   "maxActiveRequestsTip": "Максимальна кількість одночасних активних запитів на додаток (0 для необмеженої кількості)",
+  "permissions": "Permissions",
   "mermaid.preview": "Попередній перегляд діаграми",
   "newApp.Cancel": "Скасувати",
   "newApp.Confirm": "Підтвердити",

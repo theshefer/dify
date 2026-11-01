@@ -26,6 +26,8 @@ class InstalledAppRef:
 class InstalledAppAccessStore(Protocol):
     def resolve(self, *, installed_app_id: str, tenant_id: str) -> InstalledAppRef | None: ...
 
+    def ensure_collaboration_access(self, *, app_id: str, tenant_id: str, account_id: str) -> None: ...
+
 
 class WebAppUserAccessCheck(Protocol):
     def __call__(self, *, user_id: str, app_id: str) -> bool: ...
@@ -57,6 +59,12 @@ class InstalledAppAccessService:
         installed_app = self._installed_apps.resolve(installed_app_id=installed_app_id, tenant_id=tenant_id)
         if installed_app is None:
             raise InstalledAppNotFoundError("Installed app not found")
+        try:
+            self._installed_apps.ensure_collaboration_access(
+                app_id=installed_app.app_id, tenant_id=tenant_id, account_id=account_id
+            )
+        except PermissionError as error:
+            raise InstalledAppAccessDeniedError(str(error)) from error
         if not self._is_user_allowed(user_id=account_id, app_id=installed_app.app_id):
             raise InstalledAppAccessDeniedError("Access to installed app denied")
         return installed_app
